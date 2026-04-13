@@ -1,0 +1,348 @@
+// MOVE App — Prisma Schema
+// Run: npx prisma db push
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ───────────────────────────────────────
+
+enum PlanType {
+  LITE
+  STANDARD
+  PLUS
+  BUSINESS
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  TRIALING
+  PAUSED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum UtilityType {
+  GAS
+  ELECTRICITY
+  WATER
+  INTERNET
+  ALL
+}
+
+enum UtilityStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  PARTNER
+  GIG_WORKER
+}
+
+enum Language {
+  JA
+  EN
+  ZH
+  VI
+  KO
+}
+
+// ─── Models ──────────────────────────────────────
+
+model User {
+  id              String    @id @default(cuid())
+  clerkId         String    @unique
+  email           String    @unique
+  name            String?
+  phone           String?
+  language        Language  @default(EN)
+  role            UserRole  @default(CUSTOMER)
+  avatarUrl       String?
+
+  // Address
+  currentAddress  String?
+  prefecture      String?
+  city            String?
+  postalCode      String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  subscription    Subscription?
+  bookings        Booking[]
+  utilityRequests UtilityRequest[]
+  aiDesigns       AiDesign[]
+  recycleItems    RecycleItem[]
+  notifications   Notification[]
+
+  @@index([clerkId])
+  @@index([email])
+}
+
+model Subscription {
+  id                    String             @id @default(cuid())
+  userId                String             @unique
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  planType              PlanType
+  status                SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId      String?            @unique
+  stripeSubscriptionId  String?            @unique
+  stripePriceId         String?
+
+  monthlyPrice          Int                // in yen
+  contractStartDate     DateTime           @default(now())
+  contractEndDate       DateTime           // +24 months
+  nextMoveEligibleDate  DateTime           // when next move is available
+  movesUsed             Int                @default(0)
+  movesAllowed          Int                @default(1) // per contract period
+
+  // Limits per plan
+  maxDistanceKm         Int                // 10, 20, 30, unlimited
+  peakSurcharge         Int                @default(10000)
+
+  cancelledAt           DateTime?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  bookings              Booking[]
+
+  @@index([userId])
+  @@index([stripeSubscriptionId])
+}
+
+model Booking {
+  id                String        @id @default(cuid())
+  userId            String
+  user              User          @relation(fields: [userId], references: [id])
+  subscriptionId    String?
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id])
+  partnerId         String?
+  partner           Partner?      @relation(fields: [partnerId], references: [id])
+  workerId          String?
+  worker            GigWorker?    @relation(fields: [workerId], references: [id])
+
+  status            BookingStatus @default(PENDING)
+
+  // Addresses
+  fromAddress       String
+  fromPrefecture    String
+  fromCity          String
+  fromPostal        String
+  toAddress         String
+  toPrefecture      String
+  toCity            String
+  toPostal          String
+
+  // Details
+  distanceKm        Float
+  roomSize          String        // 1R, 1K, 1LDK, 2LDK, 3LDK+
+  moveDate          DateTime
+  moveTimeSlot      String        // morning / afternoon / evening
+  floorFrom         Int?
+  floorTo           Int?
+  hasElevatorFrom   Boolean       @default(false)
+  hasElevatorTo     Boolean       @default(false)
+  notes             String?
+  specialItems      String[]      // piano, bike, etc.
+
+  // Pricing
+  baseCost          Int           @default(0) // yen
+  surcharge         Int           @default(0) // peak / distance / volume
+  totalCost         Int           @default(0)
+  coveredByPlan     Boolean       @default(true)
+  customerPays      Int           @default(0) // excess amount
+
+  isPeakSeason      Boolean       @default(false)
+  confirmedAt       DateTime?
+  completedAt       DateTime?
+  cancelledAt       DateTime?
+  cancellationNote  String?
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([moveDate])
+}
+
+model UtilityRequest {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+
+  utilityType   UtilityType
+  status        UtilityStatus @default(PENDING)
+
+  // New address
+  address       String
+  prefecture    String
+  city          String
+  postalCode    String
+  floorNumber   Int?
+  moveInDate    DateTime
+
+  // Provider preferences
+  gasProvider   String?
+  elecProvider  String?
+  waterAuto     Boolean       @default(true) // water is usually municipal
+  internetType  String?       // fiber / cable / 5G home
+
+  // Contact
+  preferredContact String?    // email / phone / SMS
+  language      Language      @default(EN)
+  notes         String?
+
+  // Internal tracking
+  completedSteps  String[]    // ["gas", "electricity", "water", "internet"]
+  adminNotes    String?
+  completedAt   DateTime?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model AiDesign {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+
+  roomType      String    // bedroom / living / kitchen / etc.
+  roomSizeM2    Float?
+  photoUrls     String[]
+  prompt        String?   // user's style preferences
+
+  resultJson    Json?     // Claude's structured response
+  resultText    String?   // readable summary
+  furnitureSuggestions Json? // recycle shop items
+
+  createdAt     DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model RecycleItem {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  partnerId     String?
+  partner       RecyclePartner? @relation(fields: [partnerId], references: [id])
+
+  itemName      String
+  category      String    // furniture / appliance / clothing / other
+  condition     String    // excellent / good / fair / poor
+  estimatedValue Int?     // yen
+  photoUrls     String[]
+  description   String?
+
+  status        String    @default("PENDING") // PENDING / LISTED / SOLD / DONATED
+  salePrice     Int?
+  commission    Int?      // our cut
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Partner {
+  id            String    @id @default(cuid())
+  name          String
+  companyName   String
+  email         String    @unique
+  phone         String
+  prefecture    String[]  // areas covered
+  cities        String[]
+  maxDistanceKm Int       @default(30)
+  truckCount    Int       @default(1)
+  rating        Float     @default(5.0)
+  isActive      Boolean   @default(true)
+  contractRate  Int       // our agreed rate in yen per base move
+
+  bookings      Booking[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model RecyclePartner {
+  id            String    @id @default(cuid())
+  name          String    // e.g. Hard Off, Eco Ring
+  website       String?
+  phone         String?
+  locations     String[]
+  isActive      Boolean   @default(true)
+  commissionPct Float     @default(0.15) // 15% commission
+
+  items         RecycleItem[]
+
+  createdAt     DateTime  @default(now())
+}
+
+model GigWorker {
+  id            String    @id @default(cuid())
+  userId        String?
+  name          String
+  phone         String    @unique
+  email         String?
+  prefecture    String[]
+  rating        Float     @default(5.0)
+  isAvailable   Boolean   @default(false)
+  isVerified    Boolean   @default(false)
+  lastPingAt    DateTime?
+
+  bookings      Booking[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+
+  type      String    // booking_confirmed / move_reminder / utility_done / etc.
+  title     String
+  body      String
+  isRead    Boolean   @default(false)
+  channel   String    @default("app") // app / sms / email
+  sentAt    DateTime?
+
+  createdAt DateTime  @default(now())
+
+  @@index([userId, isRead])
+}
+
+model PeakSeason {
+  id        String    @id @default(cuid())
+  startDate DateTime
+  endDate   DateTime
+  surcharge Int       // extra yen
+  label     String    // "Spring 2026 繁忙期"
+  isActive  Boolean   @default(true)
+}
