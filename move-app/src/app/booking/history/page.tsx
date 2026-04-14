@@ -45,7 +45,7 @@ export default async function BookingHistoryPage() {
         <div className="rounded-xl border-2 border-dashed border-border p-12 text-center">
           <Truck size={32} className="mx-auto text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium">No bookings yet</p>
-          <p className="text-xs text-muted-foreground mt-1 mb-4">Book your first move when you're ready.</p>
+          <p className="text-xs text-muted-foreground mt-1 mb-4">Book your first move when you&apos;re ready.</p>
           <Link
             href="/booking"
             className="inline-flex items-center gap-2 text-sm text-primary font-medium hover:underline"
