@@ -42,7 +42,7 @@ export default async function BookingDetailPage({ params }: { params: { id: stri
       ? { label: 'Surcharge',      value: `+${formatYen(booking.surcharge)}` }
       : null,
     { label: 'Total cost',         value: formatYen(booking.totalCost),    bold: true },
-    { label: 'Covered by plan',    value: formatYen(booking.coveredByPlan) },
+     { label: 'Covered by plan',    value: booking.coveredByPlan ? 'Yes' : 'No' },
     { label: 'Your payment',       value: formatYen(booking.customerPays), highlight: booking.customerPays > 0 },
   ].filter(Boolean) as { label: string; value: string; bold?: boolean; highlight?: boolean }[];
 
