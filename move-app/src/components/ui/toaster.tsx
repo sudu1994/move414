@@ -24,18 +24,16 @@ const Toast = React.forwardRef<
   <ToastPrimitive.Root
     ref={ref}
     className={cn(
-      'group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-lg border p-4 shadow-sm transition-all',
-      'data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)]',
-      'data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[state=closed]:animate-out',
-      'data-[state=open]:animate-in data-[state=open]:slide-in-from-top-full',
-      {
-        'bg-background border': variant === 'default',
-        'bg-green-50 border-green-200': variant === 'success',
-        'bg-red-50 border-red-200': variant === 'destructive',
-        'bg-blue-50 border-blue-200': variant === 'info',
-      },
-      className
-    )}
+  'group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-lg border p-4 shadow-sm transition-all',
+  'data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)]',
+  'data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[state=closed]:animate-out',
+  'data-[state=open]:animate-in data-[state=open]:slide-in-from-top-full',
+  variant === 'default' && 'bg-background border',
+  variant === 'success' && 'bg-green-50 border-green-200',
+  variant === 'destructive' && 'bg-red-50 border-red-200',
+  variant === 'info' && 'bg-blue-50 border-blue-200',
+  className
+)}
     {...props}
   />
 ));
