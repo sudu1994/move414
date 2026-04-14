@@ -331,13 +331,12 @@ export function RoomScanner() {
           </p>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
-          <div className={cn(
+         <div className={cn(
   'w-1.5 h-1.5 rounded-full',
   phase === 'idle' && 'bg-muted-foreground',
   phase === 'scanning' && 'bg-yellow-500 animate-pulse',
   (phase === 'complete' || phase === 'placing') && 'bg-green-500'
-)}
-          } />
+)} />
           {phase === 'idle' && 'Ready'}
           {phase === 'scanning' && 'Scanning…'}
           {phase === 'complete' && 'Scan complete'}
