@@ -2,7 +2,9 @@ import Link from 'next/link';
 import { ArrowRight, Check, Zap, Home, Wrench, Sparkles, RefreshCcw } from 'lucide-react';
 import { PLANS } from '@/lib/types';
 import { formatYen } from '@/lib/utils';
+'use client';
 
+import { useEffect, useState } from 'react';
 export default function HomePage() {
   const plans = Object.values(PLANS);
 
