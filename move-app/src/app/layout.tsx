@@ -25,9 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         </head>
         <body className="min-h-screen bg-background antialiased">
-          <div className="fixed top-4 right-4 z-50">
-            <LanguageSwitcher />
-          </div>
+          <LanguageSwitcher />
           {children}
           <Toaster />
         </body>
