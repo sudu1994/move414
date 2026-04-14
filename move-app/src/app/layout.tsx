@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Toaster } from '@/components/ui/toaster';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
@@ -23,6 +24,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         </head>
         <body className="min-h-screen bg-background antialiased">
+          <div className="fixed top-4 right-4 z-50">
+            <LanguageSwitcher />
+          </div>
           {children}
           <Toaster />
         </body>
