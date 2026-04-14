@@ -81,7 +81,7 @@ export function calculateMoveCost(params: {
     (month === 2) ||
     (month === 3) ||
     (month === 4 && day <= 15);
-  const peakSurcharge = isPeak ? plan.peakSurcharge : 0;
+  const peakSurcharge = isPeak ? (baseCost * 0.15) : 0;
 
   const totalCost = baseCost + distanceSurcharge + peakSurcharge;
 
