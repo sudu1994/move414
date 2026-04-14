@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
         baseCost: pricing.baseCost,
         surcharge: pricing.distanceSurcharge + pricing.peakSurcharge,
         totalCost: pricing.totalCost,
-        coveredByPlan: pricing.coveredByPlan,
+        coveredByPlan: pricing.coveredByPlan > 0,
         customerPays: pricing.customerPays,
         isPeakSeason: pricing.peakSurcharge > 0,
       },
