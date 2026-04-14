@@ -186,9 +186,9 @@ export function RoomScanner() {
 
       if (phaseRef.current === 'scanning') {
         // Sweep gradient
-        const sweep = ctx.createConicalGradient
-          ? ctx.createConicalGradient(cx, cy, angle - 1.2, angle)
-          : null;
+        const sweep = ctx.createConicGradient
+          ? ctx.createConicGradient(angle - 1.2, cx, cy)
+             : null;
 
         // Fallback arc sweep
         ctx.save();
