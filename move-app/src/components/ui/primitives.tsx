@@ -93,12 +93,12 @@ export function StatCard({ label, value, sub, icon, trend, trendValue, className
       {(sub || trendValue) && (
         <div className="flex items-center gap-2 mt-1">
           {trendValue && (
-            <span className={cn(
+           <span className={cn(
   'text-xs font-medium',
   trend === 'up' && 'text-green-600',
   trend === 'down' && 'text-red-500',
   (trend === 'neutral' || !trend) && 'text-muted-foreground'
-)})}>
+)}>
               {trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''} {trendValue}
             </span>
           )}
@@ -109,6 +109,7 @@ export function StatCard({ label, value, sub, icon, trend, trendValue, className
   );
 }
 
+// ─── StatusBadge ──────────────────────────────────────────
 // ─── StatusBadge ──────────────────────────────────────────
 const statusConfig: Record<string, { label: string; className: string }> = {
   ACTIVE:      { label: 'Active',      className: 'bg-green-100 text-green-800' },
